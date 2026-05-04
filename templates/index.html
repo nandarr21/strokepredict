@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% block title %}Beranda — StrokePredict {% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero */
+    .hero-section {
+        background: linear-gradient(135deg, #114f70 0%, #1a6e99 55%, #2596c4 100%);
+        color: #fff;
+        padding: 5rem 0 4rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 400px; height: 400px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.05);
+    }
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        bottom: -80px; left: -40px;
+        width: 320px; height: 320px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.04);
+    }
+    .hero-badge {
+        background: rgba(255,255,255,.15);
+        color: #fff;
+        padding: .4rem 1rem;
+        border-radius: 20px;
+        font-size: .8rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        display: inline-block;
+        margin-bottom: 1.25rem;
+    }
+    .hero-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 900;
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 1.2;
+    }
+    .hero-title .highlight { color: #f8c84e; }
+    .hero-icon-wrap {
+        width: 200px; height: 200px;
+        background: rgba(255,255,255,.1);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+    .hero-icon-wrap i { font-size: 80px; color: rgba(255,255,255,.9); }
+
+    /* Stats strip */
+    .stats-strip { background: #fff; border-bottom: 1px solid #e4edf5; }
+    .stat-item { padding: 1.5rem 1rem; text-align: center; }
+    .stat-number {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 900;
+        font-size: 1.75rem;
+        color: var(--primary);
+        display: block;
+    }
+    .stat-label { font-size: .8rem; color: var(--text-muted); font-weight: 600; letter-spacing: .5px; }
+
+    /* Feature cards */
+    .feature-card {
+        border-radius: 16px;
+        padding: 2rem 1.5rem;
+        height: 100%;
+        text-align: center;
+        border: none;
+        background: #fff;
+        box-shadow: 0 4px 20px rgba(26,110,153,.08);
+        transition: transform .25s, box-shadow .25s;
+    }
+    .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 36px rgba(26,110,153,.14); }
+    .feature-icon {
+        width: 64px; height: 64px;
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1.25rem;
+        font-size: 1.6rem;
+    }
+
+    /* Info strip */
+    .info-card {
+        background: linear-gradient(135deg, #fff5f5, #fff);
+        border-left: 4px solid var(--accent);
+        border-radius: 0 12px 12px 0;
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* CTA */
+    .cta-section {
+        background: linear-gradient(135deg, #114f70, #1a6e99);
+        color: #fff;
+        padding: 4rem 0;
+        border-radius: 0;
+    }
+    .btn-cta {
+        background: #f8c84e;
+        color: #1b2a38;
+        font-weight: 800;
+        font-size: 1.1rem;
+        padding: .85rem 2.5rem;
+        border-radius: 12px;
+        border: none;
+        transition: transform .2s, box-shadow .2s;
+    }
+    .btn-cta:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(248,200,78,.4);
+        color: #1b2a38;
+    }
+
+    /* Stroke facts */
+    .fact-list li {
+        padding: .6rem 0;
+        border-bottom: 1px dashed #dde8f0;
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+    }
+    .fact-list li:last-child { border-bottom: none; }
+    .fact-icon { color: var(--accent); font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── HERO ── -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center gy-4">
+            <div class="col-lg-7" style="position:relative;z-index:1;">
+                <div class="hero-badge">
+                </div>
+                <h1 class="hero-title mb-3">
+                    Prediksi <span class="highlight">Risiko Stroke</span><br>
+                    dengan Kecerdasan Buatan
+                </h1>
+                <p class="mb-4" style="font-size:1.1rem;opacity:.9;max-width:520px;">
+                    Aplikasi berbasis <strong>Jaringan Saraf Tiruan (JST)</strong> dengan algoritma 
+                    Backpropagation untuk mendeteksi risiko stroke berdasarkan data kesehatan Anda secara 
+                    cepat dan akurat.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="/predict" class="btn btn-warning btn-lg fw-bold px-4">
+                        <i class="bi bi-activity me-2"></i>Mulai Prediksi Sekarang
+                    </a>
+                    <a href="/about" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-info-circle me-2"></i>Pelajari Selengkapnya
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center" style="position:relative;z-index:1;">
+                <div class="hero-icon-wrap">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── STATS STRIP ── -->
+<section class="stats-strip">
+    <div class="container">
+        <div class="row g-0">
+            <div class="col-6 col-md-3 border-end">
+                <div class="stat-item">
+                    <span class="stat-number">5,110</span>
+                    <span class="stat-label">DATA TRAINING</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 border-end">
+                <div class="stat-item">
+                    <span class="stat-number">10</span>
+                    <span class="stat-label">FITUR INPUT</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 border-end">
+                <div class="stat-item">
+                    <span class="stat-number">3</span>
+                    <span class="stat-label">HIDDEN LAYERS</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <span class="stat-number">~93%</span>
+                    <span class="stat-label">AKURASI MODEL</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FITUR APLIKASI ── -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary-soft text-primary-custom px-3 py-2 rounded-pill mb-2 fw-bold">FITUR UTAMA</span>
+            <h2 class="fw-bold" style="font-family:'Nunito',sans-serif;">Apa yang Bisa Dilakukan?</h2>
+            <div class="section-divider mx-auto"></div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#e8f4fd;">
+                        <i class="bi bi-clipboard2-pulse" style="color:var(--primary);"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Input Data Medis</h5>
+                    <p class="text-muted mb-0">Masukkan data kesehatan seperti usia, tekanan darah, kadar glukosa, BMI, dan riwayat penyakit.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#fff0e8;">
+                        <i class="bi bi-diagram-3" style="color:#e87c2a;"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Analisis Backpropagation</h5>
+                    <p class="text-muted mb-0">Model MLP dengan 3 hidden layer memproses input menggunakan algoritma backpropagation + gradient descent.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#fde8e8;">
+                        <i class="bi bi-bar-chart-line" style="color:var(--accent);"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Hasil & Probabilitas</h5>
+                    <p class="text-muted mb-0">Dapatkan hasil prediksi risiko stroke beserta persentase probabilitas dan kategori tingkat risiko.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── TENTANG STROKE & DATASET ── -->
+<section class="py-5" style="background:#fff;">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill mb-2 fw-bold">KESEHATAN</span>
+                <h2 class="fw-bold mb-1" style="font-family:'Nunito',sans-serif;">Fakta Tentang Stroke</h2>
+                <div class="section-divider"></div>
+                <ul class="fact-list list-unstyled">
+                    <li>
+                        <i class="bi bi-exclamation-circle-fill fact-icon"></i>
+                        <span>Stroke adalah penyebab kematian dan kecacatan <strong>kedua terbesar</strong> di dunia menurut WHO.</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-exclamation-circle-fill fact-icon"></i>
+                        <span>Faktor risiko utama meliputi hipertensi, diabetes, merokok, dan pola hidup tidak sehat.</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-exclamation-circle-fill fact-icon"></i>
+                        <span>Deteksi dini risiko stroke dapat <strong>menyelamatkan jiwa</strong> dan mengurangi dampak kecacatan jangka panjang.</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-exclamation-circle-fill fact-icon"></i>
+                        <span>AI dan machine learning telah terbukti efektif membantu skrining risiko stroke secara non-invasif.</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <span class="badge bg-primary-soft text-primary-custom px-3 py-2 rounded-pill mb-2 fw-bold">DATASET</span>
+                <h2 class="fw-bold mb-1" style="font-family:'Nunito',sans-serif;">Stroke Prediction Dataset</h2>
+                <div class="section-divider"></div>
+                <p class="text-muted">Dataset berasal dari <strong>Kaggle</strong> yang terdiri dari 5.110 data pasien dengan 12 atribut klinis untuk memprediksi kemungkinan terjadinya stroke.</p>
+                <div class="row g-3 mt-1">
+                    <div class="col-6">
+                        <div class="info-card">
+                            <div class="fw-bold text-danger"><i class="bi bi-people-fill me-1"></i> 5,110</div>
+                            <small class="text-muted">Total Sampel Data</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-card">
+                            <div class="fw-bold text-danger"><i class="bi bi-columns-gap me-1"></i> 12</div>
+                            <small class="text-muted">Jumlah Atribut</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-card">
+                            <div class="fw-bold text-danger"><i class="bi bi-check2-circle me-1"></i> Biner</div>
+                            <small class="text-muted">Tipe Klasifikasi</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-card">
+                            <div class="fw-bold text-danger"><i class="bi bi-cloud-download me-1"></i> Kaggle</div>
+                            <small class="text-muted">Sumber Dataset</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+</section>
+
+{% endblock %}

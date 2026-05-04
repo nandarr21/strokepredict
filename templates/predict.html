@@ -1,0 +1,635 @@
+{% extends 'base.html' %}
+{% block title %}Prediksi Risiko Stroke — StrokePredict {% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Progress steps ── */
+    .step-bar { background:#fff; border-bottom:1px solid #e4edf5; padding:1rem 0; }
+    .step-item { display:flex; align-items:center; gap:.5rem; font-size:.82rem; font-weight:700; color:var(--text-muted); }
+    .step-item.active { color:var(--primary); }
+    .step-item.done  { color:#28a745; }
+    .step-num {
+        width:28px; height:28px; border-radius:50%;
+        display:flex; align-items:center; justify-content:center;
+        font-size:.78rem; font-weight:800;
+        border:2px solid currentColor;
+        flex-shrink:0;
+    }
+    .step-sep { flex:1; height:2px; background:#e4edf5; margin:0 .5rem; }
+
+    /* ── Form sections ── */
+    .form-section-title {
+        font-family:'Nunito',sans-serif;
+        font-weight:800;
+        font-size:1rem;
+        color:var(--primary);
+        display:flex;
+        align-items:center;
+        gap:.6rem;
+        padding:.75rem 1rem;
+        background:rgba(26,110,153,.06);
+        border-radius:10px;
+        margin-bottom:1.25rem;
+    }
+    .form-section-title i { font-size:1.1rem; }
+
+    /* ── Range slider ── */
+    .range-value {
+        background:var(--primary);
+        color:#fff;
+        font-weight:800;
+        font-size:.9rem;
+        padding:.2rem .7rem;
+        border-radius:20px;
+        min-width:52px;
+        text-align:center;
+    }
+    input[type=range] { accent-color: var(--primary); cursor:pointer; }
+
+    /* ── Toggle buttons ── */
+    .btn-check:checked + .btn-outline-primary {
+        background:var(--primary);
+        color:#fff;
+        border-color:var(--primary);
+    }
+    .btn-outline-primary {
+        border-color:var(--primary);
+        color:var(--primary);
+        border-radius:8px;
+        font-weight:700;
+        font-size:.875rem;
+    }
+
+    /* ── Result card ── */
+    .result-card {
+        border-radius:20px;
+        overflow:hidden;
+        box-shadow:0 8px 40px rgba(0,0,0,.12);
+        animation: slideUp .5s ease;
+    }
+    @keyframes slideUp {
+        from { opacity:0; transform:translateY(24px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    .result-header {
+        padding:2rem;
+        text-align:center;
+        color:#fff;
+    }
+    .result-icon {
+        width:80px; height:80px;
+        border-radius:50%;
+        background:rgba(255,255,255,.2);
+        display:flex; align-items:center; justify-content:center;
+        font-size:2.2rem;
+        margin:0 auto 1rem;
+    }
+    .result-label {
+        font-family:'Nunito',sans-serif;
+        font-weight:900;
+        font-size:1.5rem;
+        letter-spacing:.5px;
+    }
+
+    /* ── Probability donut ── */
+    .prob-circle-wrap {
+        position:relative;
+        width:140px; height:140px;
+        margin:0 auto;
+    }
+    .prob-circle-wrap canvas { position:absolute; top:0; left:0; }
+    .prob-center {
+        position:absolute;
+        top:50%; left:50%;
+        transform:translate(-50%,-50%);
+        text-align:center;
+        font-family:'Nunito',sans-serif;
+    }
+    .prob-pct { font-size:1.6rem; font-weight:900; line-height:1; }
+    .prob-sub { font-size:.68rem; color:var(--text-muted); font-weight:700; letter-spacing:.5px; }
+
+    /* ── Detail rows ── */
+    .detail-row {
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:.6rem 0;
+        border-bottom:1px dashed #e4edf5;
+        font-size:.875rem;
+    }
+    .detail-row:last-child { border-bottom:none; }
+    .detail-key { color:var(--text-muted); font-weight:600; }
+    .detail-val { font-weight:700; }
+
+    /* ── Risk meter ── */
+    .risk-meter { height:10px; border-radius:5px; overflow:hidden; background:#e4edf5; }
+    .risk-fill { height:100%; border-radius:5px; transition:width 1s ease; }
+
+    /* ── Tips ── */
+    .tip-item {
+        display:flex; gap:.75rem; align-items:flex-start;
+        padding:.75rem 0;
+        border-bottom:1px dashed #e4edf5;
+    }
+    .tip-item:last-child { border-bottom:none; }
+    .tip-icon {
+        width:34px; height:34px; border-radius:10px;
+        display:flex; align-items:center; justify-content:center;
+        font-size:.95rem; flex-shrink:0;
+    }
+
+    /* ── Sticky submit ── */
+    .submit-wrap {
+        position:sticky;
+        bottom:0;
+        background:rgba(255,255,255,.95);
+        backdrop-filter:blur(8px);
+        padding:1rem 0;
+        border-top:1px solid #e4edf5;
+        z-index:10;
+    }
+
+    /* disclaimer */
+    .disclaimer {
+        background:#fffbea;
+        border-left:4px solid #f8c84e;
+        border-radius:0 10px 10px 0;
+        padding:.9rem 1.1rem;
+        font-size:.82rem;
+        color:#7a6a20;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── PAGE HERO ── -->
+<div class="page-hero">
+    <div class="container">
+        <div class="badge-hero"><i class="bi bi-activity me-1"></i>FORM PREDIKSI</div>
+        <h1 class="mb-2">Cek Risiko Stroke Anda</h1>
+        <p class="mb-0" style="opacity:.85;max-width:560px;">
+            Isi semua data di bawah ini dengan lengkap dan jujur untuk mendapatkan hasil prediksi yang akurat dari model Backpropagation.
+        </p>
+    </div>
+</div>
+
+<!-- ── STEP BAR ── -->
+<div class="step-bar">
+    <div class="container">
+        <div class="d-flex align-items-center">
+            <div class="step-item active">
+                <span class="step-num">1</span> Data Pribadi
+            </div>
+            <div class="step-sep"></div>
+            <div class="step-item">
+                <span class="step-num">2</span> Riwayat Medis
+            </div>
+            <div class="step-sep"></div>
+            <div class="step-item">
+                <span class="step-num">3</span> Gaya Hidup
+            </div>
+            <div class="step-sep"></div>
+            <div class="step-item">
+                <span class="step-num">4</span> Hasil Prediksi
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4">
+
+        <!-- ══ FORM KIRI ══ -->
+        <div class="col-lg-7">
+
+            {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+                <i class="bi bi-x-octagon-fill me-2"></i>{{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endif %}
+
+            <div class="card mb-0">
+                <div class="card-body p-4">
+                    <form method="POST" action="/predict" id="predictionForm">
+
+                        <!-- ── SEKSI 1: DATA PRIBADI ── -->
+                        <div class="form-section-title">
+                            <i class="bi bi-person-circle"></i> Data Pribadi
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <!-- Gender -->
+                            <div class="col-6">
+                                <label class="form-label">Jenis Kelamin</label>
+                                <div class="d-flex gap-2">
+                                    <input type="radio" class="btn-check" name="gender" id="genderM" value="Male"
+                                        {% if form_data.get('gender') == 'Male' %}checked{% endif %} required>
+                                    <label class="btn btn-outline-primary flex-fill" for="genderM">
+                                        <i class="bi bi-gender-male me-1"></i>Pria
+                                    </label>
+                                    <input type="radio" class="btn-check" name="gender" id="genderF" value="Female"
+                                        {% if form_data.get('gender','Female') == 'Female' %}checked{% endif %}>
+                                    <label class="btn btn-outline-primary flex-fill" for="genderF">
+                                        <i class="bi bi-gender-female me-1"></i>Wanita
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Married -->
+                            <div class="col-6">
+                                <label class="form-label">Status Pernikahan</label>
+                                <div class="d-flex gap-2">
+                                    <input type="radio" class="btn-check" name="ever_married" id="marriedY" value="Yes"
+                                        {% if form_data.get('ever_married','Yes') == 'Yes' %}checked{% endif %} required>
+                                    <label class="btn btn-outline-primary flex-fill" for="marriedY">Sudah</label>
+                                    <input type="radio" class="btn-check" name="ever_married" id="marriedN" value="No"
+                                        {% if form_data.get('ever_married') == 'No' %}checked{% endif %}>
+                                    <label class="btn btn-outline-primary flex-fill" for="marriedN">Belum</label>
+                                </div>
+                            </div>
+
+                            <!-- Age -->
+                            <div class="col-12">
+                                <label class="form-label d-flex justify-content-between">
+                                    Usia <span class="range-value" id="ageVal">{{ form_data.get('age', 45) }} thn</span>
+                                </label>
+                                <input type="range" class="form-range" name="age" id="ageRange"
+                                    min="1" max="100" step="1"
+                                    value="{{ form_data.get('age', 45) }}"
+                                    oninput="document.getElementById('ageVal').textContent=this.value+' thn'">
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">1 thn</small>
+                                    <small class="text-muted">100 thn</small>
+                                </div>
+                            </div>
+
+                            <!-- Residence -->
+                            <div class="col-6">
+                                <label class="form-label">Tipe Tempat Tinggal</label>
+                                <select class="form-select" name="residence_type">
+                                    <option value="Urban" {% if form_data.get('residence_type','Urban')=='Urban' %}selected{% endif %}>🏙️ Urban (Kota)</option>
+                                    <option value="Rural" {% if form_data.get('residence_type')=='Rural' %}selected{% endif %}>🌾 Rural (Desa)</option>
+                                </select>
+                            </div>
+
+                            <!-- Work type -->
+                            <div class="col-6">
+                                <label class="form-label">Jenis Pekerjaan</label>
+                                <select class="form-select" name="work_type">
+                                    <option value="Private"      {% if form_data.get('work_type','Private')=='Private' %}selected{% endif %}>Swasta</option>
+                                    <option value="Self-employed"{% if form_data.get('work_type')=='Self-employed' %}selected{% endif %}>Wiraswasta</option>
+                                    <option value="Govt_job"     {% if form_data.get('work_type')=='Govt_job' %}selected{% endif %}>PNS / Pemerintah</option>
+                                    <option value="children"     {% if form_data.get('work_type')=='children' %}selected{% endif %}>Pelajar / Anak</option>
+                                    <option value="Never_worked" {% if form_data.get('work_type')=='Never_worked' %}selected{% endif %}>Tidak Bekerja</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- ── SEKSI 2: RIWAYAT MEDIS ── -->
+                        <div class="form-section-title">
+                            <i class="bi bi-clipboard2-heart"></i> Riwayat Medis
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <!-- Hypertension -->
+                            <div class="col-6">
+                                <label class="form-label">Hipertensi</label>
+                                <div class="d-flex gap-2">
+                                    <input type="radio" class="btn-check" name="hypertension" id="htY" value="1"
+                                        {% if form_data.get('hypertension') == '1' %}checked{% endif %} required>
+                                    <label class="btn btn-outline-primary flex-fill" for="htY">
+                                        <i class="bi bi-check-circle me-1"></i>Ya
+                                    </label>
+                                    <input type="radio" class="btn-check" name="hypertension" id="htN" value="0"
+                                        {% if form_data.get('hypertension','0') == '0' %}checked{% endif %}>
+                                    <label class="btn btn-outline-primary flex-fill" for="htN">
+                                        <i class="bi bi-x-circle me-1"></i>Tidak
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Heart Disease -->
+                            <div class="col-6">
+                                <label class="form-label">Penyakit Jantung</label>
+                                <div class="d-flex gap-2">
+                                    <input type="radio" class="btn-check" name="heart_disease" id="hdY" value="1"
+                                        {% if form_data.get('heart_disease') == '1' %}checked{% endif %} required>
+                                    <label class="btn btn-outline-primary flex-fill" for="hdY">
+                                        <i class="bi bi-check-circle me-1"></i>Ya
+                                    </label>
+                                    <input type="radio" class="btn-check" name="heart_disease" id="hdN" value="0"
+                                        {% if form_data.get('heart_disease','0') == '0' %}checked{% endif %}>
+                                    <label class="btn btn-outline-primary flex-fill" for="hdN">
+                                        <i class="bi bi-x-circle me-1"></i>Tidak
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Avg Glucose -->
+                            <div class="col-12">
+                                <label class="form-label d-flex justify-content-between">
+                                    Rata-rata Kadar Glukosa (mg/dL)
+                                    <span class="range-value" id="glucoseVal">{{ form_data.get('avg_glucose_level', 100) }}</span>
+                                </label>
+                                <input type="range" class="form-range" name="avg_glucose_level" id="glucoseRange"
+                                    min="55" max="272" step="1"
+                                    value="{{ form_data.get('avg_glucose_level', 100) }}"
+                                    oninput="document.getElementById('glucoseVal').textContent=this.value">
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">55 (Normal)</small>
+                                    <small class="text-muted text-warning">126+ (Diabetes)</small>
+                                    <small class="text-muted text-danger">272 (Kritis)</small>
+                                </div>
+                            </div>
+
+                            <!-- BMI -->
+                            <div class="col-12">
+                                <label class="form-label d-flex justify-content-between">
+                                    Indeks Massa Tubuh / BMI
+                                    <span class="range-value" id="bmiVal">{{ form_data.get('bmi', 25) }}</span>
+                                </label>
+                                <input type="range" class="form-range" name="bmi" id="bmiRange"
+                                    min="10" max="60" step="0.1"
+                                    value="{{ form_data.get('bmi', 25) }}"
+                                    oninput="document.getElementById('bmiVal').textContent=parseFloat(this.value).toFixed(1)">
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">10 (Kurus)</small>
+                                    <small class="text-muted text-success">18.5–24.9 (Normal)</small>
+                                    <small class="text-muted text-danger">30+ (Obesitas)</small>
+                                </div>
+                                <div class="mt-1">
+                                    <span id="bmiCategory" class="badge"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── SEKSI 3: GAYA HIDUP ── -->
+                        <div class="form-section-title">
+                            <i class="bi bi-lungs"></i> Gaya Hidup
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label">Status Merokok</label>
+                                <div class="row g-2">
+                                    {% set smoke_opts = [
+                                        ('never smoked',    'bi-wind',           'Tidak Pernah Merokok'),
+                                        ('formerly smoked', 'bi-slash-circle',   'Mantan Perokok'),
+                                        ('smokes',          'bi-fire',           'Perokok Aktif'),
+                                        ('Unknown',         'bi-question-circle','Tidak Diketahui')
+                                    ] %}
+                                    {% for val, icon, label in smoke_opts %}
+                                    <div class="col-6">
+                                        <input type="radio" class="btn-check" name="smoking_status"
+                                            id="smoke_{{ loop.index }}" value="{{ val }}"
+                                            {% if form_data.get('smoking_status', 'never smoked') == val %}checked{% endif %}
+                                            {% if loop.first %}required{% endif %}>
+                                        <label class="btn btn-outline-primary w-100 text-start py-2 px-3" for="smoke_{{ loop.index }}">
+                                            <i class="bi {{ icon }} me-2"></i>{{ label }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── DISCLAIMER ── -->
+                        <div class="disclaimer mb-4">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <strong>Disclaimer:</strong> Prediksi ini bersifat <em>indikatif</em> dan 
+                            tidak menggantikan diagnosis medis profesional. Konsultasikan selalu hasil 
+                            dengan dokter Anda.
+                        </div>
+
+                        <!-- ── SUBMIT ── -->
+                        <div class="submit-wrap">
+                            <div class="d-flex gap-3">
+                                <button type="submit" class="btn btn-primary btn-lg flex-fill">
+                                    <i class="bi bi-cpu-fill me-2"></i>Analisis dengan AI
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary btn-lg px-4" onclick="resetForm()">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ PANEL KANAN ══ -->
+        <div class="col-lg-5">
+
+            {% if result %}
+            <!-- ── RESULT CARD ── -->
+            <div class="result-card mb-4" id="resultSection">
+                <div class="result-header
+                    {% if result.risk_color == 'success' %}bg-success
+                    {% elif result.risk_color == 'warning' %}bg-warning
+                    {% else %}bg-danger{% endif %}">
+                    <div class="result-icon">
+                        <i class="bi {{ result.risk_icon }}"></i>
+                    </div>
+                    <div class="result-label">{{ result.label }}</div>
+                    <div style="opacity:.85;font-size:.9rem;margin-top:.4rem;">
+                        Tingkat Risiko: <strong>{{ result.risk_level }}</strong>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Donut chart probabilitas -->
+                    <div class="text-center mb-4">
+                        <p class="fw-bold mb-2" style="font-size:.85rem;color:var(--text-muted);letter-spacing:.5px;">PROBABILITAS RISIKO</p>
+                        <div class="prob-circle-wrap">
+                            <canvas id="probDonut" width="140" height="140"></canvas>
+                            <div class="prob-center">
+                                <div class="prob-pct
+                                    {% if result.risk_color == 'success' %}text-success
+                                    {% elif result.risk_color == 'warning' %}text-warning
+                                    {% else %}text-danger{% endif %}">
+                                    {{ result.probability }}%
+                                </div>
+                                <div class="prob-sub">RISIKO</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Risk meter bar -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="fw-bold text-muted">LEVEL RISIKO</small>
+                            <small class="fw-bold
+                                {% if result.risk_color == 'success' %}text-success
+                                {% elif result.risk_color == 'warning' %}text-warning
+                                {% else %}text-danger{% endif %}">
+                                {{ result.risk_level }}
+                            </small>
+                        </div>
+                        <div class="risk-meter">
+                            <div class="risk-fill
+                                {% if result.risk_color == 'success' %}bg-success
+                                {% elif result.risk_color == 'warning' %}bg-warning
+                                {% else %}bg-danger{% endif %}"
+                                style="width: {{ result.probability }}%">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="text-muted">0% Rendah</small>
+                            <small class="text-muted">100% Tinggi</small>
+                        </div>
+                    </div>
+
+                    <!-- Interpretasi -->
+                    <div class="p-3 rounded-3 mb-3
+                        {% if result.risk_color == 'success' %}bg-success bg-opacity-10
+                        {% elif result.risk_color == 'warning' %}bg-warning bg-opacity-10
+                        {% else %}bg-danger bg-opacity-10{% endif %}">
+                        {% if result.risk_color == 'success' %}
+                        <p class="mb-0 small"><i class="bi bi-shield-check text-success me-2"></i>
+                            Berdasarkan data yang dimasukkan, model memprediksi risiko stroke Anda
+                            <strong class="text-success">relatif rendah</strong>. Tetap jaga pola hidup sehat!</p>
+                        {% elif result.risk_color == 'warning' %}
+                        <p class="mb-0 small"><i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                            Model mendeteksi <strong class="text-warning">risiko sedang</strong>.
+                            Disarankan untuk melakukan pemeriksaan lebih lanjut ke dokter.</p>
+                        {% else %}
+                        <p class="mb-0 small"><i class="bi bi-exclamation-octagon text-danger me-2"></i>
+                            <strong class="text-danger">Risiko tinggi terdeteksi!</strong>
+                            Segera konsultasikan dengan dokter atau tenaga medis profesional.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tips -->
+                    <p class="fw-bold mb-2" style="font-size:.85rem;color:var(--text-muted);letter-spacing:.5px;">REKOMENDASI KESEHATAN</p>
+                    <div>
+                        <div class="tip-item">
+                            <div class="tip-icon bg-primary bg-opacity-10"><i class="bi bi-activity text-primary"></i></div>
+                            <div><strong class="d-block" style="font-size:.85rem;">Olahraga Rutin</strong><small class="text-muted">30 menit per hari, 5x seminggu</small></div>
+                        </div>
+                        <div class="tip-item">
+                            <div class="tip-icon bg-success bg-opacity-10"><i class="bi bi-apple text-success"></i></div>
+                            <div><strong class="d-block" style="font-size:.85rem;">Pola Makan Sehat</strong><small class="text-muted">Kurangi garam, gula, dan lemak jenuh</small></div>
+                        </div>
+                        <div class="tip-item">
+                            <div class="tip-icon bg-info bg-opacity-10"><i class="bi bi-droplet text-info"></i></div>
+                            <div><strong class="d-block" style="font-size:.85rem;">Cukup Minum Air</strong><small class="text-muted">Minimal 8 gelas per hari</small></div>
+                        </div>
+                        <div class="tip-item">
+                            <div class="tip-icon" style="background:#fde8e8;"><i class="bi bi-hospital text-danger"></i></div>
+                            <div><strong class="d-block" style="font-size:.85rem;">Cek Kesehatan Berkala</strong><small class="text-muted">Rutin periksa tekanan darah & glukosa</small></div>
+                        </div>
+                    </div>
+
+                    <a href="/predict" class="btn btn-outline-primary w-100 mt-3 rounded-3">
+                        <i class="bi bi-arrow-repeat me-2"></i>Prediksi Ulang
+                    </a>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- ── PLACEHOLDER KANAN ── -->
+            <div class="card mb-4 text-center p-4">
+                <div style="font-size:4rem;color:#d0dde8;margin-bottom:1rem;">
+                    <i class="bi bi-heart-pulse"></i>
+                </div>
+                <h5 class="fw-bold">Hasil Prediksi</h5>
+                <p class="text-muted small">Isi dan kirim formulir di sebelah kiri untuk mendapatkan hasil prediksi risiko stroke dari model AI.</p>
+            </div>
+            {% endif %}
+
+            <!-- ── INFO FITUR ── -->
+            <div class="card">
+                <div class="card-header bg-primary-soft py-3 px-4">
+                    <h6 class="fw-bold mb-0 text-primary-custom">
+                        <i class="bi bi-info-circle me-2"></i>Fitur yang Dianalisis Model
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    {% set features = [
+                        ('bi-person','Jenis Kelamin','Gender pasien'),
+                        ('bi-calendar3','Usia','Umur dalam tahun'),
+                        ('bi-thermometer-high','Hipertensi','Tekanan darah tinggi'),
+                        ('bi-heart','Penyakit Jantung','Riwayat jantung'),
+                        ('bi-house','Status Nikah','Pernah menikah'),
+                        ('bi-briefcase','Pekerjaan','Jenis pekerjaan'),
+                        ('bi-building','Tempat Tinggal','Urban / Rural'),
+                        ('bi-droplet','Glukosa','Kadar gula darah rata-rata'),
+                        ('bi-person-fill','BMI','Indeks massa tubuh'),
+                        ('bi-lungs','Merokok','Status kebiasaan merokok'),
+                    ] %}
+                    {% for icon, title, desc in features %}
+                    <div class="detail-row px-4 {% if loop.last %}pb-2{% endif %}">
+                        <span class="detail-key"><i class="bi {{ icon }} me-2 text-primary-custom"></i>{{ title }}</span>
+                        <span class="detail-val text-muted" style="font-size:.78rem;">{{ desc }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div><!-- /col-right -->
+    </div><!-- /row -->
+</div><!-- /container -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── BMI Category ──
+function updateBmiCategory(val) {
+    const badge = document.getElementById('bmiCategory');
+    val = parseFloat(val);
+    if (val < 18.5)      { badge.className='badge bg-info';    badge.textContent='Kurus ('+val.toFixed(1)+')'; }
+    else if (val < 25)   { badge.className='badge bg-success'; badge.textContent='Normal ('+val.toFixed(1)+')'; }
+    else if (val < 30)   { badge.className='badge bg-warning text-dark'; badge.textContent='Gemuk ('+val.toFixed(1)+')'; }
+    else                 { badge.className='badge bg-danger';  badge.textContent='Obesitas ('+val.toFixed(1)+')'; }
+}
+const bmiRange = document.getElementById('bmiRange');
+if (bmiRange) {
+    updateBmiCategory(bmiRange.value);
+    bmiRange.addEventListener('input', () => updateBmiCategory(bmiRange.value));
+}
+
+// ── Reset form ──
+function resetForm() {
+    document.getElementById('predictionForm').reset();
+    updateBmiCategory(25);
+    document.getElementById('ageVal').textContent     = '45 thn';
+    document.getElementById('glucoseVal').textContent = '100';
+    document.getElementById('bmiVal').textContent     = '25.0';
+}
+
+// ── Probability Donut Chart ──
+{% if result %}
+const probCtx = document.getElementById('probDonut');
+if (probCtx) {
+    const prob = {{ result.probability }};
+    const color = "{{ '#28a745' if result.risk_color == 'success' else '#ffc107' if result.risk_color == 'warning' else '#dc3545' }}";
+    new Chart(probCtx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [prob, 100 - prob],
+                backgroundColor: [color, '#f0f6fb'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            cutout: '72%',
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            animation: { animateRotate: true, duration: 1200 }
+        }
+    });
+}
+
+// Scroll ke hasil
+const resultSection = document.getElementById('resultSection');
+if (resultSection) {
+    resultSection.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+{% endif %}
+</script>
+{% endblock %}
