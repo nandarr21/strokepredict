@@ -3,8 +3,6 @@ __pycache__/
 *.pyc
 .env
 
-model/*.pkl
-model/*.json
 
 .DS_Store
 .vscode/
